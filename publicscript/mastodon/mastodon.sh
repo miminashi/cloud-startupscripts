@@ -15,6 +15,8 @@
 # @sacloud-require-archive distro-centos distro-ver-7
 # @sacloud-text required ZONE "さくらのクラウドDNSで管理しているDNSゾーン" ex="example.com"
 # @sacloud-apikey required permission=create AK "APIキー"
+
+# スクリプト実行中とスクリプト失敗後にシェルログインしようとしたときにメッセージを表示する
 _motd() {
 	LOG=$(ls /root/.sacloud-api/notes/*log)
 	case $1 in
@@ -33,15 +35,15 @@ _motd() {
 KEY="${SACLOUD_APIKEY_ACCESS_TOKEN}:${SACLOUD_APIKEY_ACCESS_TOKEN_SECRET}"
 
 _motd start
-set -e
-trap '_motd fail' ERR
+set -e    # これ以降コマンドが失敗したらそこでスクリプト終了
+trap '_motd fail' ERR    # シグナルハンドラを設定. 以降でエラーが発生したら '_motd fail' を実行
 source /etc/sysconfig/network-scripts/ifcfg-eth0
 DOMAIN="@@@ZONE@@@"
-MADDR=mastodon@${DOMAIN}
+MADDR=mastodon@${DOMAIN}    # メールアドレス？
 #リポジトリの設定
 yum install -y yum-utils
-yum-config-manager --enable epel
-yum install -y http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-5.el7.nux.noarch.rpm
+yum-config-manager --enable epel    # エンタープライズ Linux 用の拡張パッケージ(EPEL)を追加
+yum install -y http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-5.el7.nux.noarch.rpm   # なにこえ？
 curl -sL https://rpm.nodesource.com/setup_6.x | bash -
 #パッケージのインストール
 yum update -y
